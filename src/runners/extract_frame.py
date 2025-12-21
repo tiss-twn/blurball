@@ -32,7 +32,7 @@ def extract_frame_badminton(cfg):
             log.info('extract frames in {} to {}'.format(video_path, frame_dir))
             mkdir_if_missing(frame_dir)
 
-            cap = cv2.VideoCapture(video_path)
+            cap = cv2.VideoCapture(str(video_path))
             if not cap.isOpened():
                 assert 0, '{} cannot opened'.format(video_path)
             cnt = 0
@@ -66,7 +66,7 @@ def extract_frame_soccer(cfg: DictConfig):
         log.info('extract frames in {} to {}'.format(video_path, frame_dir))
         mkdir_if_missing(frame_dir)
 
-        cap = cv2.VideoCapture(video_path)
+        cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
             assert 0, '{} cannot opened'.format(video_path)
         cnt = 0

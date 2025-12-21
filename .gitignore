@@ -167,3 +167,8 @@ datasets/*
 outputs
 wandb/
 weights/
+
+*.png
+traj.csv
+blurball_models
+*.mp4

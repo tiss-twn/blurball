@@ -21,7 +21,7 @@ def process_video(video_path, filter=False):
     os.makedirs(frames_dir, exist_ok=True)
 
     # Open the video file
-    cap = cv2.VideoCapture(video_path)
+    cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
         print(f"Failed to open video: {video_path}")
         return

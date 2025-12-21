@@ -1,4 +1,4 @@
-WASB_ROOT: /home/gossard/Git/blurball
+WASB_ROOT: ${hydra:runtime.cwd}
 defaults:
         - _self_
         - runner: train
