@@ -172,3 +172,4 @@ weights/
 traj.csv
 blurball_models
 *.mp4
+frames_*

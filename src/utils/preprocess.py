@@ -12,6 +12,13 @@ SSIM_THRESHOLD = 0.99  # SSIM threshold for detecting similar frames (1.0 is ide
 
 
 def process_video(video_path, filter=False):
+    # Check if video file exists first
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(
+            f"Video file not found: {video_path}\n"
+            f"Please check that the file exists and the path is correct."
+        )
+    
     video_path = os.path.abspath(video_path)
     video_dir = os.path.dirname(video_path)
     video_name, _ = os.path.splitext(os.path.basename(video_path))
@@ -23,8 +30,14 @@ def process_video(video_path, filter=False):
     # Open the video file
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
-        print(f"Failed to open video: {video_path}")
-        return
+        raise RuntimeError(
+            f"Failed to open video file: {video_path}\n"
+            f"The file exists but OpenCV cannot read it.\n"
+            f"Possible causes:\n"
+            f"  - Unsupported video format or codec\n"
+            f"  - Corrupted video file\n"
+            f"  - Missing video codecs in your OpenCV installation"
+        )
 
     prev_frame_gray = None
     unique_index = 0

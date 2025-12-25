@@ -11,5 +11,5 @@ defaults:
 hydra:
   run:
     dir: ${WASB_ROOT}/outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
-output_dir:
+output_dir: foul_1_test_jui
 seed: 1234

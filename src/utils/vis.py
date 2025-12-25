@@ -5,6 +5,8 @@ from tqdm import tqdm
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import subprocess
+import sys
 
 from utils import Center
 
@@ -41,13 +43,21 @@ def draw_frame(
     return img
 
 
-def gen_video(video_path, vis_dir, resize=1.0, fps=30.0, fourcc="mp4v"):
+def gen_video(video_path, vis_dir, resize=1.0, fps=30.0, fourcc="avc1"):
     fnames = os.listdir(vis_dir)
     fnames.sort()
     h, w, _ = cv2.imread(osp.join(vis_dir, fnames[0])).shape
     im_size = (int(w * resize), int(h * resize))
-    fourcc = cv2.VideoWriter_fourcc(*fourcc)
-    out = cv2.VideoWriter(video_path, fourcc, fps, im_size)
+    
+    # Use mp4v initially (most reliable with OpenCV)
+    # We'll convert to H.264 afterwards using ffmpeg
+    temp_video_path = video_path.replace('.mp4', '_temp.mp4')
+    fourcc_code = cv2.VideoWriter_fourcc(*"mp4v")
+    out = cv2.VideoWriter(temp_video_path, fourcc_code, fps, im_size)
+    
+    if not out.isOpened():
+        print(f"Error: Could not initialize video writer")
+        return
 
     for fname in tqdm(fnames):
         im_path = osp.join(vis_dir, fname)
@@ -58,3 +68,37 @@ def gen_video(video_path, vis_dir, resize=1.0, fps=30.0, fourcc="mp4v"):
         else:
             print("COuldn't read image")
             print(fname)
+    
+    out.release()
+    
+    # Convert to H.264 using ffmpeg
+    print("Converting to H.264...")
+    try:
+        # Use ffmpeg to convert to H.264
+        cmd = [
+            'ffmpeg', '-y',  # -y to overwrite output file
+            '-i', temp_video_path,
+            '-c:v', 'libx264',  # Use H.264 codec
+            '-preset', 'medium',  # Balance between speed and compression
+            '-crf', '23',  # Quality (18-28, lower = better quality)
+            '-pix_fmt', 'yuv420p',  # For compatibility
+            video_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            print(f"Successfully converted to H.264: {video_path}")
+            # Remove temp file
+            os.remove(temp_video_path)
+        else:
+            print(f"Warning: ffmpeg conversion failed, keeping mp4v version")
+            print(f"Error: {result.stderr}")
+            # Rename temp to final if ffmpeg failed
+            os.rename(temp_video_path, video_path)
+    except FileNotFoundError:
+        print("Warning: ffmpeg not found, keeping mp4v version")
+        os.rename(temp_video_path, video_path)
+    except Exception as e:
+        print(f"Warning: Conversion failed ({e}), keeping mp4v version")
+        if os.path.exists(temp_video_path):
+            os.rename(temp_video_path, video_path)
